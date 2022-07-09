@@ -76,7 +76,6 @@ function ABMFormDatatable(){
             title: "Estado",
             data: "rowState",
             "render": function ( data, type, row, meta ) {
-                console.log(data);
                 return `<span class="${rowStates[data].class}">${rowStates[data].text}</span>`;
             }
         },
@@ -126,15 +125,12 @@ function ABMFormDatatable(){
         columns: _columns
     }
 
-
-
-    
-
     _config = {
         datatable: null,
         form: null,
+        formStatusTag: null,
+        operationButton: null,
     }
-
 
 
     function _init(config) {
@@ -148,7 +144,16 @@ function ABMFormDatatable(){
 
                 _formInputs = document.querySelectorAll('#' + config.form[0].id + ' input[' + _inputProperty + ']');
                 //agregamos el form estatus al form
-                _config.formStatus = _config.form.prepend(`<span id="rowState" class=""></span>`);
+                
+                _config.form.prepend(`<span id="rowState" class="invisible"></span>`);
+                _config.formStatusTag = $('#rowState');
+
+                _config.form.append(`<br/><button type="button" id="operationButton" class="invisible"> asd </button>`);
+                _config.operationButton = $('#operationButton');
+
+                _formInputs.forEach(e => {
+                    e.addEventListener('keypress', _change)
+                })
                 
             }else{
 
@@ -163,6 +168,9 @@ function ABMFormDatatable(){
 
                 _datatable.on('select', function(event, row, type, rowIdx){
                     //console.log(event, row , type, rowIdx);
+                    _config.operationButton.addClass('invisible');
+                    _config.formStatusTag.addClass('invisible');
+
                     var data = _datatable.data().toArray()[rowIdx];
                     _bindDataInForm(data);
 
@@ -184,6 +192,10 @@ function ABMFormDatatable(){
         }
 
 
+    }
+
+    function _change(){
+        console.log("Cambiaste");
     }
 
     function _bindDataInForm(data) {
@@ -247,17 +259,34 @@ function ABMFormDatatable(){
 
     function _new() {
         console.log("New");
-        
+
+        _config.formStatusTag.removeClass('invisible');
+        _config.formStatusTag.addClass(rowStates[1].class);
+        _config.formStatusTag.text(rowStates[1].text);
+
+        _config.operationButton.removeClass('invisible');
+        _config.operationButton.addClass('btn btn-success');
+        _config.operationButton.text("Agregar");
+
         _deselectRow();
         _blankForm();
         _disableForm(false);
 
+
+
     }
 
     function _edit() {
+
         console.log("Edit");
+
+        _config.formStatusTag.removeClass('invisible');
+        _config.formStatusTag.addClass(rowStates[0].class);
+        _config.formStatusTag.text(rowStates[0].text);
+
         //var rowData =  _datatable.rows('.selected').data().toArray();
         _disableForm(false);
+
     }
 
     function _delete() {
