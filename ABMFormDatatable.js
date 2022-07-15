@@ -262,7 +262,6 @@ function ABMFormDatatable(){
 
             _formInputs.forEach(e => {
 
-                
                 var columnName = e.getAttribute(_inputProperty);
                 
                 var value = data[`${columnName}`];
