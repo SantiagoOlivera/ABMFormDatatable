@@ -247,7 +247,7 @@ function ABMFormDatatable(){
             //nuevo
             _changeFormStatusTag(1);
             _changeFormStatusButton(1);
-            
+
         }
 
 
@@ -262,6 +262,7 @@ function ABMFormDatatable(){
 
             _formInputs.forEach(e => {
 
+                
                 var columnName = e.getAttribute(_inputProperty);
                 
                 var value = data[`${columnName}`];
