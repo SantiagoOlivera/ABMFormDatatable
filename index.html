@@ -27,6 +27,7 @@
     <!-- bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
 
     <title>Document</title>
 
@@ -43,11 +44,11 @@
                 <form id="formIMA003_1">
                     <br />
                     <label for="">Name</label>
-                    <input class="form-control required" value="" duxdata="name" disabled required />
+                    <input type="text" class="form-control required" value="" duxdata="name" disabled required  />
                     <label for="">Position</label>
-                    <input class="form-control required" value="" duxdata="position" disabled required />
+                    <input type="text" class="form-control required" value="" duxdata="position" disabled required />
                     <label for="">Office</label>
-                    <input class="form-control required" value="" duxdata="office" disabled required />
+                    <input type="text" class="form-control required" value="" duxdata="office" disabled required />
                 </form>
               </div>
               <div class="col-sm-12 col-lg-6">
@@ -61,12 +62,11 @@
 
         
     </div>
-
-    
     
     <script src="./ABMFormDatatable.js"></script>
 
     <script>
+
         $(document).ready(function () {
 
             var form = $('#formIMA003_1'); 
@@ -75,12 +75,29 @@
             var abm = ABMFormDatatable();
 
             abm.init({
+
                 datatable: datatable,
                 form: form,
+                columns: [
+                    //columns datatable config
+                    {
+                        title: "Name",
+                        data: "name"
+                    },
+                    {
+                        title: "Position",
+                        data: "position"
+                    },
+                    {
+                        title: "Office",
+                        data: "office"
+                    }
+                ],
             });
 
 
         });
+
     </script>
     
     
