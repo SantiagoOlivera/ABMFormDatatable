@@ -10,6 +10,7 @@ function ABMFormDatatable(){
     var _inputProperty = "duxdata";
     var _formInputs = null;
     var bkp = null;
+    var _datatableType = 'DatatableForm';
     
     var rowStatus = [
         {
@@ -68,6 +69,18 @@ function ABMFormDatatable(){
         dtId: null,
     }
 
+    var _language = {
+        decimal: ",",
+        thousands: ".",
+        /* search: "_INPUT_",
+        searchPlaceholder: "Buscar", */
+        /* lengthMenu: "Display _MENU_ records per page",
+        zeroRecords: "Nothing found - sorry",
+        info: "Mostrando page _PAGE_ of _PAGES_",
+        infoEmpty: "No records available",
+        infoFiltered: "(filtered from _MAX_ total records)" */
+    }
+
     var _dtDefaultConfig = function() {
 
         return {
@@ -111,7 +124,7 @@ function ABMFormDatatable(){
                     className: 'btn btn-success',
                     titleAttr: 'Excel',
                 },
-                {
+                /* {
                     
                     text:`<i class="bi bi-table"></i>`,
                     className: 'btn btn-dark',
@@ -119,7 +132,7 @@ function ABMFormDatatable(){
                     action: function ( e, dt, node, config ) {
                         _operationButtons.changeDatatableFormEdit();
                     }
-                },
+                }, */
                 {
                     
                     text:`<i class="bi bi-x"></i>`,
@@ -131,15 +144,33 @@ function ABMFormDatatable(){
                 }
                 
             ],
+            responsive: true,
+            scrollX: true,
             order: false,
             paging: true,
-            pageLength: 5,
+            pageLength: 3,
             select: { style: 'single' },
             data: _config.data,
             columns: _config.columns,
             columnDefs: [
                 { className: "dt-head-center", targets: [ 0 ] }
             ],
+            language: _language,
+            drawCallback: function(){
+
+                $('.dataTables_paginate a').addClass('m-1');
+                $('.dataTables_paginate a').addClass('btn btn-light');
+
+                $('.dataTables_paginate .current').removeClass('btn btn-light');
+                $('.dataTables_paginate .current').addClass('btn btn-primary');
+                //$('.dataTables_paginate').addClass('pagination');
+                //$('.dataTables_paginate a').addClass('page-item');
+                $('.dataTables_paginate a').removeClass('paginate_button');
+            },
+            initComplete: function(){
+                //$('.dataTables_filter').addClass('btn btn-sm btn-dark');
+                
+            }
         }
     }
 
@@ -170,7 +201,6 @@ function ABMFormDatatable(){
                     _config.form.append(`<br/><button name="operationButton" type="button" id="operationButton" class="invisible"></button><br/><br/>`);
                 }
                 _config.operationButton = $('#operationButton');
-                
                 
                 //agregamos el change de cada input
                 _formInputs.forEach(e => {
@@ -210,11 +240,39 @@ function ABMFormDatatable(){
                             title: "Estado",
                             className: 'dt-body-center',
                             data: "status",
-                            "render": function ( data, type, row, meta ) {
+                            render: function ( data, type, row, meta ) {
                                 return `<span class="${rowStatus[data].class}">${rowStatus[data].text}</span>`;
                             }
                         }
                     );
+                    
+                    //column types
+                    _config.columns.forEach(c => {
+                        var type = c['type'];
+                        if(type){
+                            if (type === 'decimal'){
+                                c['render'] = function(data,b,row,d){
+                                    ;
+                                    var formatFunction = format('decimal');
+                                    var ret = formatFunction(data, c['decimals'], c['thousands']);
+                                    return ret;
+                                }
+                            }
+                        }
+                    });
+
+                }else{
+                    
+                    var columnIdx = _config.columns.indexOf(columnStatus);
+                    ;
+                    _config.columns[columnIdx] = {
+                        title: "Estado",
+                        className: 'dt-body-center',
+                        data: "status",
+                        render: function ( data, type, row, meta ) {
+                            return `<span class="${rowStatus[data].class}">${rowStatus[data].text}</span>`;
+                        }
+                    }
 
                 }
 
@@ -229,8 +287,8 @@ function ABMFormDatatable(){
                 _datatable = _config.datatable.DataTable(_dtDefaultConfig());
                 
                 _config.dtId = _datatable.table().node().id;
-
-                bkp = _datatable.data().toArray();
+                
+                bkp = structuredClone( _datatable.data().toArray() );
 
                 _datatable.on('select', function(event, row, type, rowIdx){
                     //console.log(event, row , type, rowIdx);
@@ -280,17 +338,32 @@ function ABMFormDatatable(){
 
     function _changeDatatableFormEdit(){
 
-        if(_config.form.is(":visible")){
+
+        if(_datatableType == 'DatatableForm'){
+
+            _datatableType = 'EditableDatatable'
+            
+            _config.columns.forEach(e => {
+                e.render = renderInput;
+            });
 
             var config = _config;
             config.data = _datatable.data();
             _config.form.hide();
-
             _detroyDatatable();
+
             _init(config);
 
 
         }else{
+            
+            _datatableType = 'DatatableForm'
+
+            _config.columns.forEach(e => {
+                e.render = renderData;
+            });
+            _detroyDatatable();
+            _init(_config);
 
             _config.form.show();
             _blankForm();
@@ -299,6 +372,15 @@ function ABMFormDatatable(){
 
         
 
+    }
+
+    function renderData( data, type, row, meta ){
+        return data;
+    }
+
+    function renderInput( data, type, row, meta ){
+        var html = `<input value="${data}" class="form-control" onclick="event.stopPropagation();" disabled />`;
+        return html;
     }
 
     function _changeSelect( event ){
@@ -336,21 +418,24 @@ function ABMFormDatatable(){
             var status = rowData['status'];
             var field = input.getAttribute('duxdata');
             var type = input.getAttribute('type');
+            
+            if(rowData[`${field}`] != input.value){
 
-            if(status === 0){
-                //normal: change to edited
-                rowData['status'] = 2; 
+                if(status === 0){
+                    //normal: change to edited
+                    rowData['status'] = 2; 
+                }
+
+                if(type == 'text'){
+                    rowData[`${field}`] = input.value;        
+                }else if(type == 'select'){
+                    rowData[`${field}`] = { id: input.value , text: input.selectedOptions[0].innerHTML };
+                }
+
+                _changeFormStatusTag(rowData['status']);
+                _updateDataInDatatable();
             }
-
-            if(type == 'text'){
-                rowData[`${field}`] = input.value;
-            }else if(type == 'select'){
-                rowData[`${field}`] = { id: input.value , text: input.selectedOptions[0].innerHTML };
-            }
-
-            _changeFormStatusTag(rowData['status']);
-
-            _updateDataInDatatable();
+                
 
         }
         
@@ -443,7 +528,7 @@ function ABMFormDatatable(){
 
     function _changeFormStatusButton(status){
 
-        debugger;
+        ;
          _config.operationButton.attr('class' , '');
          _config.operationButton.addClass(rowStatus[status].buttonCss);
          _config.operationButton.text(rowStatus[status].buttonText);
@@ -530,19 +615,29 @@ function ABMFormDatatable(){
 
         console.log("Edit");
 
-        var row = _datatable.rows({ selected: true })[0];
+        var row = _datatable.rows({ selected: true });
 
-        if(row.length === 0){
+        if(row[0].length === 0){
 
             console.log('Elemento no seleccionado')
 
         }else{
+            ;
+            var dataRow = row.data()[0];
 
-            _config.formStatusTag.removeClass('invisible');
-            _config.formStatusTag.addClass(rowStatus[0].class);
-            _config.formStatusTag.text(rowStatus[0].text);
+            if(
+                dataRow['status'] === 3 
+            ){
+                console.log('row deleted!!');
+            }else{
+
+                _config.formStatusTag.removeClass('invisible');
+                _config.formStatusTag.addClass(rowStatus[0].class);
+                _config.formStatusTag.text(rowStatus[0].text);
             
-            _disableForm(false);
+                _disableForm(false);
+
+            }
 
         }
 
@@ -574,6 +669,7 @@ function ABMFormDatatable(){
                     _config.formStatusTag.addClass(rowStatus[3].class);
                     _config.formStatusTag.text(rowStatus[3].text);
                     _datatable.columns('status').cells().invalidate().render();
+                    _disableForm(true);
                     break;
                 case 1:
                     //new: remove row
@@ -586,6 +682,7 @@ function ABMFormDatatable(){
                     _config.formStatusTag.addClass(rowStatus[3].class);
                     _config.formStatusTag.text(rowStatus[3].text);
                     _datatable.columns('status').cells().invalidate().render();
+                    _disableForm(true);
                     break;
                 default:
                     break;
@@ -597,6 +694,8 @@ function ABMFormDatatable(){
 
 
     function _changeFormStatusTag(status){
+        
+        console.log(rowStatus, status);
 
         _config.formStatusTag.removeClass('invisible');
         _config.formStatusTag.attr('class' , '');
@@ -677,18 +776,54 @@ function ABMFormDatatable(){
 
     function _undo(){
 
-        debugger;
         var row = _datatable.rows({ selected: true });
         var rowIdx = _datatable.rows({ selected: true })[0][0];
-        rowStatus = _datatable.rows(row).data()[0].status;
+        var status = _datatable.rows(row).data()[0].status;
 
-        switch(rowStatus){
+        switch(status){
             case 0:
+                //normal
                 console.log("Do nothing");
                 break;
             case 1:
+                //new
                 _datatable.rows().deselect();
                 _datatable.rows(rowIdx).remove().draw();
+            case 2:
+                //edited
+                var data = row.data().toArray()[0];
+                var columns = Object.keys(data);
+                if(bkp){
+                    
+                    columns.forEach(e => {
+                        data[e] = bkp[rowIdx][e];
+                    });
+
+                }else{
+                    throw('Back data is not defined');
+                }
+
+                _updateDataInDatatable();
+
+                _datatable.rows(rowIdx).select();
+            
+                break;
+            case 3:
+                var data = row.data().toArray()[0];
+                var columns = Object.keys(data);
+                if(bkp){
+                    
+                    columns.forEach(e => {
+                        data[e] = bkp[rowIdx][e];
+                    });
+
+                }else{
+                    throw('Back data is not defined');
+                }
+
+                _updateDataInDatatable();
+
+                _datatable.rows(rowIdx).select();
                 break;
 
         }
@@ -698,8 +833,13 @@ function ABMFormDatatable(){
 
 
     function _initDatatableCssStyles(){
-       
-        $('input[type=search]').addClass('form-control');
+        var searchInput = $('input[type=search]');
+        searchInput.addClass('form-control');
+        var style = {
+            margin: 0,
+            width: "95%"
+        }
+        searchInput.css(style);
         $('#'+ _config.dtId + '_filter label').css('font-weight', 'bold');
         
 
@@ -720,6 +860,80 @@ function ABMFormDatatable(){
             $(this).addClass('btn btn-primary p-2');
         }); */
         
+    }
+
+    function format(type){
+        switch(type){
+            case 'decimal':
+                return formatDecimal;
+            break;
+        }
+    }
+
+    function formatDecimal(number, decimalPlaces, thousandsSeparator){
+        
+        ;
+        var string = '';
+
+        if( isNaN(number) ){
+            throw('Number supplied is not a number');
+        }else if(isNaN(decimalPlaces)){
+            throw('Decimal places supplied is not a number');
+        }
+
+        var split = number.toString().split(".");
+        
+        if(split.length > 1){
+            
+            var int = split[0];
+            var decimals = split[1];
+
+            if(thousandsSeparator){
+                
+                var int = int.toString().replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
+            }
+            
+            if(decimalPlaces === 0){
+                decimals = '';
+            }else if(decimals.length === decimalPlaces){
+                decimals = ',' + split[1];
+            }else if(decimals.length !== decimalPlaces){
+                
+                if(decimalPlaces < decimals.length){
+                    decimals = "," + decimals.substring(0, decimalPlaces);    
+                }else{
+                    decimals = "," + decimals.padEnd(decimalPlaces, "0");
+                }   
+
+            }
+
+            string = int + decimals;
+
+        }else{
+            ;
+            var int;
+            var decimals;
+
+            if(thousandsSeparator){
+                int = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
+            }else{
+                int = number.toString();
+            }
+
+            if( (decimalPlaces) && (decimalPlaces > 0) ){
+                decimals = '';
+                decimals = decimals.padEnd(decimalPlaces, "0" );
+                decimals = ',' + decimals;
+            }else{
+                decimals = '';
+            }
+            
+            string = int + decimals;
+        }
+
+
+        return string;
+
     }
 
     return {

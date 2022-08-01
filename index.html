@@ -9,7 +9,6 @@
     <!-- datatable -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.4.0/css/select.dataTables.min.css"/>
-
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
 
 
@@ -39,57 +38,84 @@
 </head>
 <body>
     
+    <style>
+        .col-sm-12{
+            padding-left: 0;
+        }
+        .col-lg-3{
+            padding-left: 0;
+        }
+        table.dataTable tbody tr.selected {
+            color: white !important;
+            background-color: #eeeeee !important;
+        }
+        /* table td{
+            outline: 1px solid rgb(0,0,0);
+        } */
+    </style>
     
-    <div class="programa">
-        
-        <div class="container">
+    <div class="card " style="margin: 5px; padding: 5px;">
 
-            <div class="row">
+        <form id="formIMA003_1" >
+            <br/>
+            <div class="container" style="max-width: none;">
 
-              <div class="col-sm-12 col-lg-12">
-                <h2>Form</h2>
-                <form id="formIMA003_1">
-                    
-                    <br />
-                    <label for="">Name</label>
-                    <input type="text" class="form-control required" value="" duxdata="name" name="name" disabled required  />
-                    <br />
-                    <label for="">Position</label>
-                    <input type="text" class="form-control required" value="" duxdata="position" name="position" disabled required />
-                    <br />
-                    <label for="">Office</label>
-                    <input type="text" class="form-control required" value="" duxdata="office" name="office" disabled required />
-                    <br />
-                    <label for="">Gender</label>
-                    <select type="select" class="form-control required" duxdata="gender" name="gender" disabled required>
-                        <option disabled selected></option>
-                        <option value="M">Masculino</option>
-                        <option value="F">Femenino</option>
-                    </select>
-
-                </form>
-
-                <br/>
-                <br/>
-                <table id="dtIMA003_1"  id="example" class="display" style="width:100%"></table>
-
-              </div>
-              
-              <!-- <div class="col-sm-12 col-lg-6">
+                <div class="row">
                    
-              </div> -->
+                    <div class="col-sm-12 col-lg-3">
+                        <label for="">Name</label>
+                        <input type="text" class="form-control required" value="" duxdata="name" name="name" disabled required  />
+                        <br/>
+                    </div>
+                    
+                    <div class="col-sm-12 col-lg-3">
+                        <label for="">Position</label>
+                        <input type="text" class="form-control required" value="" duxdata="position" name="position" disabled required />
+                        <br/>
+                    </div>
+                    
+                    <div class="col-sm-12 col-lg-3">            
+                        <label for="">Office</label>
+                        <input type="text" class="form-control required" value="" duxdata="office" name="office" disabled required />
+                        <br/>
+                    </div>
+                    
+                    <div class="col-sm-12 col-lg-3">
+                        <label for="">Gender</label>
+                        <select type="select" class="form-control required" duxdata="gender" name="gender" disabled required>
+                            <option disabled selected></option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>            
+                        <br/>
+                    </div>
+
+                    <div class="col-sm-12 col-lg-3">            
+                        <label for="">Salary</label>
+                        <input type="text" class="form-control required" value="" duxdata="salary" name="salary" disabled required />
+                        <br/>
+                    </div>
+                    
+                    <div class="col-sm-12 col-lg-3">
+                        <label for="">Text</label>
+                        <input type="text" class="form-control live-search-input" dataType="45" duxdata=""  name="" />
+                    </div>
+                </div>
+
             </div>
-
-            
-
-        </div>
-
-        
-        <br/>
-
+                
+        </form>
         
         
+        <table id="dtIMA003_1" class="display"  style="width:100%;"></table>
     </div>
+
+    
+    
+    
+    
+
+    
     
     <script src="./ABMFormDatatable.js"></script>
 
@@ -97,7 +123,17 @@
 
         $(document).ready(function () {
 
-            var form = $('#formIMA003_1'); 
+            var form = $('#formIMA003_1')
+            
+            form.validate({
+                rules: {
+                    salary: {
+                        required: true,
+                        number: true
+                    }
+                }
+            }); 
+
             var datatable = $('#dtIMA003_1');
 
             var abm = ABMFormDatatable();
@@ -123,6 +159,13 @@
                     {
                         title: "Gender",
                         data: "gender.text"
+                    },
+                    {
+                        title: "Salary",
+                        data: "salary",
+                        type: "decimal",
+                        decimals: 3,
+                        thousands: "."
                     }
                 ],
                 data: [
@@ -131,36 +174,40 @@
                         name:"NENAAAA!!",
                         position: "Donde esta mi",
                         office: "SUPER TRAJE???",
-                        gender: { id: 'F', text: 'Femenino' }
+                        gender: { id: 'F', text: 'Femenino' },
+                        salary: 1000
                     },
                     {
                         status: 0,
                         name:"asd1",
                         position: "asd1",
                         office: "asd1",
-                        gender: { id: 'M', text: 'Masculino' }
+                        gender: { id: 'M', text: 'Masculino' },
+                        salary: 12000.254
                     },
                     {
                         status: 0,
                         name:"asd2",
                         position: "asd2",
                         office: "asd2",
-                        gender: { id: 'F', text: 'Femenino' }
+                        gender: { id: 'F', text: 'Femenino' },
+                        salary: 1200000.25
                     },
                     {
                         status: 0,
                         name:"asd3",
                         position: "asd3",
                         office: "asd3",
-                        gender: { id: 'M', text: 'Masculino' }
+                        gender: { id: 'M', text: 'Masculino' },
+                        salary: 5001.251
                     },
                     {
                         status: 0,
                         name:"asd",
                         position: "asd",
                         office: "asd",
-                        gender: { id: 'M', text: 'Masculino' }
-
+                        gender: { id: 'M', text: 'Masculino' },
+                        salary: 583.25
                     }
                 ]
             });
@@ -170,7 +217,7 @@
 
     </script>
     
-    
+    <script src="./LiveSearchInput.js"></script>
 
 </body>
 </html>
